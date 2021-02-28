@@ -41,28 +41,29 @@ public class ProductServiceImpl implements ProductService {
         Optional<Product> product = productRepository.findById(productId);
         Optional<Parameter> parameter = parameterService.getParameter();
 
-        if(quantity > 0) {
-            if (product.isPresent()) {
-                if (parameter.isPresent()) {
-                    Double unitPrice = (product.get().getPrice() + (product.get().getPrice() * parameter.get().getLaborPercentage())) / product.get().getUnits();
-
-                    Integer cartonCount = quantity / product.get().getUnits();
-                    price += calculateCartonPrice(product.get().getPrice(), cartonCount, parameter.get());
-
-                    Integer unitCount = quantity % product.get().getUnits();
-                    price += unitCount * unitPrice;
-                } else {
-                    log.error("Parameters not found");
-                    throw new IllegalArgumentException("Parameters not found");
-                }
-            } else {
-                log.error("Invalid Product Id");
-                throw new IllegalArgumentException("Invalid product id");
-            }
-        } else {
+        if (quantity <= 0) {
             log.error("Invalid Quantity");
             throw new IllegalArgumentException("Invalid quantity");
         }
+
+        if (!product.isPresent()) {
+            log.error("Invalid Product Id");
+            throw new IllegalArgumentException("Invalid product id");
+        }
+
+        if (!parameter.isPresent()) {
+            log.error("Parameters not found");
+            throw new IllegalArgumentException("Parameters not found");
+        }
+
+        Double unitPrice = (product.get().getPrice() + (product.get().getPrice() * parameter.get().getLaborPercentage())) / product.get().getUnits();
+
+        Integer cartonCount = quantity / product.get().getUnits();
+        price += calculateCartonPrice(product.get().getPrice(), cartonCount, parameter.get());
+
+        Integer unitCount = quantity % product.get().getUnits();
+        price += unitCount * unitPrice;
+
         return price;
     }
 
