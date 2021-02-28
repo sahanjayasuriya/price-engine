@@ -46,12 +46,12 @@ public class ProductServiceImpl implements ProductService {
             throw new IllegalArgumentException("Invalid quantity");
         }
 
-        if (!product.isPresent()) {
+        if (product.isEmpty()) {
             log.error("Invalid Product Id");
             throw new IllegalArgumentException("Invalid product id");
         }
 
-        if (!parameter.isPresent()) {
+        if (parameter.isEmpty()) {
             log.error("Parameters not found");
             throw new IllegalArgumentException("Parameters not found");
         }
