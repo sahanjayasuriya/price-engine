@@ -9,6 +9,6 @@ public interface ProductService {
 
     List<ProductDto> getProducts();
 
-    ProductPriceDto getPriceForProductAndQuantity(Long productId, Integer quantity);
+    List<ProductPriceDto> getPriceForProductAndQuantity(Long productId, Integer[] quantity);
 
 }

@@ -10,5 +10,6 @@ public class AppUrl {
 
     // Product Controller
     public final static String GET_PRODUCT_PRICE = "/price";
+    public final static String GET_PRODUCT_PRICE_LIST = "/price/list";
 
 }

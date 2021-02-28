@@ -21,9 +21,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -57,11 +59,15 @@ class ProductControllerTest {
         products.add(product1);
         products.add(product2);
 
+        List<ProductPriceDto> productPriceDtos = new ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            productPriceDtos.add(new ProductPriceDto());
+        }
+
         Mockito.when(productService.getProducts()).thenReturn(products);
-        Mockito.when(productService.getPriceForProductAndQuantity(eq(2L), ArgumentMatchers.anyInt())).thenReturn(new ProductPriceDto());
-        Mockito.when(productService.getPriceForProductAndQuantity(eq(2L), ArgumentMatchers.anyInt())).thenReturn(new ProductPriceDto());
-        Mockito.when(productService.getPriceForProductAndQuantity(eq(3L), ArgumentMatchers.anyInt())).thenThrow(new IllegalArgumentException("Invalid product id"));
-        Mockito.when(productService.getPriceForProductAndQuantity(2L, -1)).thenThrow(new IllegalArgumentException("Invalid quantity"));
+        Mockito.when(productService.getPriceForProductAndQuantity(eq(2L), any(Integer[].class))).thenReturn(productPriceDtos);
+        Mockito.when(productService.getPriceForProductAndQuantity(eq(3L), any(Integer[].class))).thenThrow(new IllegalArgumentException("Invalid product id"));
+        Mockito.when(productService.getPriceForProductAndQuantity(1L, new Integer[]{-1})).thenThrow(new IllegalArgumentException("Invalid quantity"));
     }
 
     @Test
@@ -78,7 +84,7 @@ class ProductControllerTest {
     @Test
     @DisplayName("Get prices for 50 products")
     void testGetProductPrices() {
-        ResponseEntity<?> productPrices = productController.getProductPrices(2L, null);
+        ResponseEntity<?> productPrices = productController.getProductPriceList(2L, 50);
         Assertions.assertAll(
                 () -> Assertions.assertEquals(productPrices.getStatusCode(), HttpStatus.OK),
                 () -> assertNotNull(productPrices.getBody()),
@@ -89,7 +95,7 @@ class ProductControllerTest {
     @Test
     @DisplayName("Get prices for a product by product id and quantity")
     void testGetProductPriceByProductAndQuantity() {
-        ResponseEntity<?> price = productController.getProductPrices(2L, 1);
+        ResponseEntity<?> price = productController.getProductPrice(2L, 1);
         Assertions.assertAll(
                 () -> Assertions.assertEquals(price.getStatusCode(), HttpStatus.OK),
                 () -> assertNotNull(price.getBody())
@@ -100,7 +106,7 @@ class ProductControllerTest {
     @DisplayName("Get prices for 50 products passing invalid product id")
     void testGetProductPricesPassingInvalidProductId() {
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            productController.getProductPrices(3L, null);
+            productController.getProductPriceList(3L, 50);
         });
         Assertions.assertEquals(exception.getMessage(), "Invalid product id");
     }
@@ -109,7 +115,7 @@ class ProductControllerTest {
     @DisplayName("Get prices for a product passing invalid product id")
     void testGetProductPricePassingInvalidProductId() {
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            productController.getProductPrices(3L, 1);
+            productController.getProductPrice(3L, 1);
         });
         Assertions.assertEquals(exception.getMessage(), "Invalid product id");
     }
@@ -118,7 +124,7 @@ class ProductControllerTest {
     @DisplayName("Get prices for a product passing invalid quantity")
     void testGetProductPricePassingInvalidQuantity() {
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            productController.getProductPrices(2L, -1);
+            productController.getProductPrice(1L, -1);
         });
         Assertions.assertEquals(exception.getMessage(), "Invalid quantity");
     }

@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -84,36 +83,36 @@ class ProductServiceImplTest {
     @Test
     @DisplayName("Get price of a product for a single unit")
     void testGetPriceForProductSingleQuantity() {
-        ProductPriceDto price = productService.getPriceForProductAndQuantity(2L, 1);
-        Assertions.assertEquals(price.getPrice(), 214.5, delta);
+        List<ProductPriceDto> price = productService.getPriceForProductAndQuantity(2L, new Integer[]{1});
+        Assertions.assertEquals(price.get(0).getPrice(), 214.5, delta);
     }
 
     @Test
     @DisplayName("Get price of a product for single carton")
     void testGetPriceForProductSingleCarton() {
-        ProductPriceDto price = productService.getPriceForProductAndQuantity(2L, 5);
-        Assertions.assertEquals(price.getPrice(), 825.0, delta);
+        List<ProductPriceDto> price = productService.getPriceForProductAndQuantity(2L, new Integer[]{5});
+        Assertions.assertEquals(price.get(0).getPrice(), 825.0, delta);
     }
 
     @Test
     @DisplayName("Get price of a product for single carton and two units")
     void testGetPriceForProductSingleCartonAndTwoUnits() {
-        ProductPriceDto price = productService.getPriceForProductAndQuantity(2L, 7);
-        Assertions.assertEquals(price.getPrice(), 1254.0, delta);
+        List<ProductPriceDto> price = productService.getPriceForProductAndQuantity(2L, new Integer[]{7});
+        Assertions.assertEquals(price.get(0).getPrice(), 1254.0, delta);
     }
 
     @Test
     @DisplayName("Get price of a product for discount eligible cartons")
     void testGetPriceForProductDiscountEligibleCartons() {
-        ProductPriceDto price = productService.getPriceForProductAndQuantity(2L, 15);
-        Assertions.assertEquals(price.getPrice(), 2227.5, delta);
+        List<ProductPriceDto> price = productService.getPriceForProductAndQuantity(2L, new Integer[]{15});
+        Assertions.assertEquals(price.get(0).getPrice(), 2227.5, delta);
     }
 
     @Test
     @DisplayName("Get price passing invalid product id")
     void testGetPricePassingInvalidProductId() {
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            productService.getPriceForProductAndQuantity(3L, 1);
+            productService.getPriceForProductAndQuantity(3L, new Integer[]{1});
         });
 
         Assertions.assertEquals(exception.getMessage(), "Invalid product id");
@@ -123,7 +122,7 @@ class ProductServiceImplTest {
     @DisplayName("Get price passing invalid quantity")
     void testGetPricePassingInvalidQuantity() {
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            productService.getPriceForProductAndQuantity(2L, -1);
+            productService.getPriceForProductAndQuantity(2L, new Integer[]{-1});
         });
 
         Assertions.assertEquals(exception.getMessage(), "Invalid quantity");
@@ -133,10 +132,10 @@ class ProductServiceImplTest {
     @DisplayName("Get price passing invalid product id and quantity")
     void testGetPricePassingInvalidProductIdAndQuantity() {
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            productService.getPriceForProductAndQuantity(3L, -1);
+            productService.getPriceForProductAndQuantity(3L, new Integer[]{-1});
         });
 
-        Assertions.assertEquals(exception.getMessage(), "Invalid quantity");
+        Assertions.assertEquals(exception.getMessage(), "Invalid product id");
     }
 
 }

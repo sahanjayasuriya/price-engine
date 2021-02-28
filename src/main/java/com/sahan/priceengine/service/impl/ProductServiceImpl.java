@@ -12,6 +12,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,15 +36,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductPriceDto getPriceForProductAndQuantity(Long productId, Integer quantity) {
-        ProductPriceDto productPriceDto = new ProductPriceDto();
+    public List<ProductPriceDto> getPriceForProductAndQuantity(Long productId, Integer[] quantity) {
+        List<ProductPriceDto> productPriceDtos = new ArrayList<>(quantity.length);
         Optional<Product> product = productRepository.findById(productId);
         Optional<Parameter> parameter = parameterService.getParameter();
-
-        if (quantity <= 0) {
-            log.error("Invalid Quantity");
-            throw new IllegalArgumentException("Invalid quantity");
-        }
 
         if (product.isEmpty()) {
             log.error("Invalid Product Id");
@@ -55,15 +51,30 @@ public class ProductServiceImpl implements ProductService {
             throw new IllegalArgumentException("Parameters not found");
         }
 
-        Double unitPrice = (product.get().getPrice() + (product.get().getPrice() * parameter.get().getLaborPercentage())) / product.get().getUnits();
+        for (Integer i : quantity) {
+            if (i <= 0) {
+                log.error("Invalid Quantity");
+                throw new IllegalArgumentException("Invalid quantity");
+            }
+            productPriceDtos.add(calculatePrice(product.get(), parameter.get(), i));
+        }
 
-        Integer cartonCount = quantity / product.get().getUnits();
-        productPriceDto.setPrice(productPriceDto.getPrice() + calculateCartonPrice(product.get().getPrice(), cartonCount, parameter.get()));
+        return productPriceDtos;
+    }
 
-        Integer unitCount = quantity % product.get().getUnits();
+    private ProductPriceDto calculatePrice(Product product, Parameter parameter, Integer quantity) {
+        ProductPriceDto productPriceDto = new ProductPriceDto();
+
+        Double unitPrice = (product.getPrice() + (product.getPrice() * parameter.getLaborPercentage())) / product.getUnits();
+
+        Integer cartonCount = quantity / product.getUnits();
+        productPriceDto.setPrice(productPriceDto.getPrice() + calculateCartonPrice(product.getPrice(), cartonCount, parameter));
+
+        Integer unitCount = quantity % product.getUnits();
         productPriceDto.setPrice(productPriceDto.getPrice() + unitCount * unitPrice);
 
-        productPriceDto.setProductName(product.get().getProductName());
+        productPriceDto.setProductName(product.getProductName());
+        productPriceDto.setUnits(quantity);
         return productPriceDto;
     }
 
