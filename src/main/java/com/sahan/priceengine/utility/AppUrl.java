@@ -6,7 +6,7 @@ public class AppUrl {
     }
 
     public final static String API_CONTEXT_PATH = "/api/v1";
-    public final static String PRODUCT_API = "/product";
+    public final static String PRODUCTS_API = "/products";
 
     // Product Controller
     public final static String GET_PRODUCT_PRICE = "/price";

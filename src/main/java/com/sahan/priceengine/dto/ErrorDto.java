@@ -1,7 +1,10 @@
 package com.sahan.priceengine.dto;
 
+import lombok.Data;
+
 import java.util.Date;
 
+@Data
 public class ErrorDto {
     private int statusCode;
     private Date timestamp;

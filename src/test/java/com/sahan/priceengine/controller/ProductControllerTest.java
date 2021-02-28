@@ -58,10 +58,10 @@ class ProductControllerTest {
         products.add(product2);
 
         Mockito.when(productService.getProducts()).thenReturn(products);
-        Mockito.when(productService.getPriceForProductAndQuantity(eq(2L), ArgumentMatchers.anyInt())).thenReturn(Double.valueOf(0));
-        Mockito.when(productService.getPriceForProductAndQuantity(eq(2L), ArgumentMatchers.anyInt())).thenReturn(Double.valueOf(0));
-        Mockito.when(productService.getPriceForProductAndQuantity(eq(3L), ArgumentMatchers.anyInt())).thenThrow(IllegalArgumentException.class);
-        Mockito.when(productService.getPriceForProductAndQuantity(2L, -1)).thenThrow(IllegalArgumentException.class);
+        Mockito.when(productService.getPriceForProductAndQuantity(eq(2L), ArgumentMatchers.anyInt())).thenReturn(new ProductPriceDto());
+        Mockito.when(productService.getPriceForProductAndQuantity(eq(2L), ArgumentMatchers.anyInt())).thenReturn(new ProductPriceDto());
+        Mockito.when(productService.getPriceForProductAndQuantity(eq(3L), ArgumentMatchers.anyInt())).thenThrow(new IllegalArgumentException("Invalid product id"));
+        Mockito.when(productService.getPriceForProductAndQuantity(2L, -1)).thenThrow(new IllegalArgumentException("Invalid quantity"));
     }
 
     @Test
@@ -78,18 +78,18 @@ class ProductControllerTest {
     @Test
     @DisplayName("Get prices for 50 products")
     void testGetProductPrices() {
-        ResponseEntity<List<ProductPriceDto>> productPrices = productController.getProductPrices(2L);
+        ResponseEntity<?> productPrices = productController.getProductPrices(2L, null);
         Assertions.assertAll(
                 () -> Assertions.assertEquals(productPrices.getStatusCode(), HttpStatus.OK),
                 () -> assertNotNull(productPrices.getBody()),
-                () -> Assertions.assertEquals(productPrices.getBody().size(), 50)
+                () -> Assertions.assertEquals(((List<ProductPriceDto>)productPrices.getBody()).size(), 50)
         );
     }
 
     @Test
     @DisplayName("Get prices for a product by product id and quantity")
     void testGetProductPriceByProductAndQuantity() {
-        ResponseEntity<Double> price = productController.getProductPriceByProductAndQuantity(2L, 1);
+        ResponseEntity<?> price = productController.getProductPrices(2L, 1);
         Assertions.assertAll(
                 () -> Assertions.assertEquals(price.getStatusCode(), HttpStatus.OK),
                 () -> assertNotNull(price.getBody())
@@ -99,21 +99,27 @@ class ProductControllerTest {
     @Test
     @DisplayName("Get prices for 50 products passing invalid product id")
     void testGetProductPricesPassingInvalidProductId() {
-        ResponseEntity<List<ProductPriceDto>> productPrices = productController.getProductPrices(3L);
-        Assertions.assertEquals(productPrices.getStatusCode(), HttpStatus.BAD_REQUEST);
+        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            productController.getProductPrices(3L, null);
+        });
+        Assertions.assertEquals(exception.getMessage(), "Invalid product id");
     }
 
     @Test
     @DisplayName("Get prices for a product passing invalid product id")
     void testGetProductPricePassingInvalidProductId() {
-        ResponseEntity<Double> productPrices = productController.getProductPriceByProductAndQuantity(3L, 1);
-        Assertions.assertEquals(productPrices.getStatusCode(), HttpStatus.BAD_REQUEST);
+        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            productController.getProductPrices(3L, 1);
+        });
+        Assertions.assertEquals(exception.getMessage(), "Invalid product id");
     }
 
     @Test
     @DisplayName("Get prices for a product passing invalid quantity")
     void testGetProductPricePassingInvalidQuantity() {
-        ResponseEntity<Double> productPrices = productController.getProductPriceByProductAndQuantity(2L, -1);
-        Assertions.assertEquals(productPrices.getStatusCode(), HttpStatus.BAD_REQUEST);
+        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            productController.getProductPrices(2L, -1);
+        });
+        Assertions.assertEquals(exception.getMessage(), "Invalid quantity");
     }
 }

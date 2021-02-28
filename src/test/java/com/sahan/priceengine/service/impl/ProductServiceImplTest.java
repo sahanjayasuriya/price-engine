@@ -1,6 +1,7 @@
 package com.sahan.priceengine.service.impl;
 
 import com.sahan.priceengine.dto.ProductDto;
+import com.sahan.priceengine.dto.ProductPriceDto;
 import com.sahan.priceengine.entity.Parameter;
 import com.sahan.priceengine.entity.Product;
 import com.sahan.priceengine.enums.ProductLabel;
@@ -83,29 +84,29 @@ class ProductServiceImplTest {
     @Test
     @DisplayName("Get price of a product for a single unit")
     void testGetPriceForProductSingleQuantity() {
-        Double price = productService.getPriceForProductAndQuantity(2L, 1);
-        Assertions.assertEquals(price, 214.5, delta);
+        ProductPriceDto price = productService.getPriceForProductAndQuantity(2L, 1);
+        Assertions.assertEquals(price.getPrice(), 214.5, delta);
     }
 
     @Test
     @DisplayName("Get price of a product for single carton")
     void testGetPriceForProductSingleCarton() {
-        Double price = productService.getPriceForProductAndQuantity(2L, 5);
-        Assertions.assertEquals(price, 825.0, delta);
+        ProductPriceDto price = productService.getPriceForProductAndQuantity(2L, 5);
+        Assertions.assertEquals(price.getPrice(), 825.0, delta);
     }
 
     @Test
     @DisplayName("Get price of a product for single carton and two units")
     void testGetPriceForProductSingleCartonAndTwoUnits() {
-        Double price = productService.getPriceForProductAndQuantity(2L, 7);
-        Assertions.assertEquals(price, 1254.0, delta);
+        ProductPriceDto price = productService.getPriceForProductAndQuantity(2L, 7);
+        Assertions.assertEquals(price.getPrice(), 1254.0, delta);
     }
 
     @Test
     @DisplayName("Get price of a product for discount eligible cartons")
     void testGetPriceForProductDiscountEligibleCartons() {
-        Double price = productService.getPriceForProductAndQuantity(2L, 15);
-        Assertions.assertEquals(price, 2227.5, delta);
+        ProductPriceDto price = productService.getPriceForProductAndQuantity(2L, 15);
+        Assertions.assertEquals(price.getPrice(), 2227.5, delta);
     }
 
     @Test

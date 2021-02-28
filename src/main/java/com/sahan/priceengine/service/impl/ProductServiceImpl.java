@@ -1,6 +1,7 @@
 package com.sahan.priceengine.service.impl;
 
 import com.sahan.priceengine.dto.ProductDto;
+import com.sahan.priceengine.dto.ProductPriceDto;
 import com.sahan.priceengine.entity.Parameter;
 import com.sahan.priceengine.entity.Product;
 import com.sahan.priceengine.repository.ProductRepository;
@@ -14,8 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.sahan.priceengine.utility.AppConstant.DOUBLE_ZERO;
 
 @Service
 @Log4j2
@@ -36,8 +35,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Double getPriceForProductAndQuantity(Long productId, Integer quantity) {
-        Double price = DOUBLE_ZERO;
+    public ProductPriceDto getPriceForProductAndQuantity(Long productId, Integer quantity) {
+        ProductPriceDto productPriceDto = new ProductPriceDto();
         Optional<Product> product = productRepository.findById(productId);
         Optional<Parameter> parameter = parameterService.getParameter();
 
@@ -59,12 +58,13 @@ public class ProductServiceImpl implements ProductService {
         Double unitPrice = (product.get().getPrice() + (product.get().getPrice() * parameter.get().getLaborPercentage())) / product.get().getUnits();
 
         Integer cartonCount = quantity / product.get().getUnits();
-        price += calculateCartonPrice(product.get().getPrice(), cartonCount, parameter.get());
+        productPriceDto.setPrice(productPriceDto.getPrice() + calculateCartonPrice(product.get().getPrice(), cartonCount, parameter.get()));
 
         Integer unitCount = quantity % product.get().getUnits();
-        price += unitCount * unitPrice;
+        productPriceDto.setPrice(productPriceDto.getPrice() + unitCount * unitPrice);
 
-        return price;
+        productPriceDto.setProductName(product.get().getProductName());
+        return productPriceDto;
     }
 
     private ProductDto copyProperties(Product product) {
