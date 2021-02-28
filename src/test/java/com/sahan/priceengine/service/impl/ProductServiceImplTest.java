@@ -135,7 +135,7 @@ class ProductServiceImplTest {
             productService.getPriceForProductAndQuantity(3L, -1);
         });
 
-        Assertions.assertEquals(exception.getMessage(), "Invalid product id");
+        Assertions.assertEquals(exception.getMessage(), "Invalid quantity");
     }
 
 }
